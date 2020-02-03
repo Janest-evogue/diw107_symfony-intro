@@ -32,6 +32,10 @@ class IndexController extends AbstractController
     }
 
     /**
+     * Une route avec une partie variable (entre accolades)
+     * Le $qui en paramètre de la méthode (même nom que dans la route)
+     * contient la valeur de cette partie variable
+     *
      * @Route("/bonjour/{qui}")
      */
     public function bonjour($qui)
@@ -47,6 +51,10 @@ class IndexController extends AbstractController
     }
 
     /**
+     * Partie variable de la route optionnelle (avec une valeur par défaut) :
+     * La route matche /salut/unNom : $qui vaut "unNom"
+     * et matche aussi /salut et /salut/ : $qui vaut "à toi"
+     *
      * @Route("/salut/{qui}", defaults={"qui": "à toi"})
      */
     public function salut($qui)
@@ -55,6 +63,22 @@ class IndexController extends AbstractController
             'index/salut.html.twig',
             [
                 'qui' => $qui
+            ]
+        );
+    }
+
+    /**
+     * id doit être un nombre (\d+ en expression régulière)
+     *
+     *
+     * @Route("/categorie/{id}", requirements={"id": "\d+"})
+     */
+    public function categorie($id)
+    {
+        return $this->render(
+            'index/categorie.html.twig',
+            [
+                'id' => $id
             ]
         );
     }
