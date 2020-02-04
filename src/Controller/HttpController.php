@@ -173,9 +173,83 @@ class HttpController extends AbstractController
      */
     public function flashed(SessionInterface $session)
     {
-        dump($session->all());
-        dump($_SESSION);
+        //dump($_SESSION);
+
+//        foreach ($session->getFlashBag()->all() as $type => $messages) {
+//            echo "<strong>$type:</strong><br>";
+////            foreach ($messages as $message) {
+////                echo $message . '<br>';
+////            }
+//            echo implode('<br>', $messages);
+//            echo '<br>';
+//        }
 
         return $this->render('http/flashed.html.twig');
+    }
+
+    /*
+     * Faire une page avec un formulaire en post avec :
+     * - email (text)
+     * - message (textarea)
+     *
+     * Si le formulaire est envoyé, vérifier que les deux champs sont remplis
+     * Si non, afficher un message d'erreur
+     * Si oui, enregistrer les valeurs en session et rediriger vers
+     * une nouvelle page qui les affiche et vide la session
+     * Dans cette page, si la session est vide, on redirige vers le formulaire
+     */
+
+    /**
+     * @Route("/formulaire")
+     */
+    public function formulaire(Request $request)
+    {
+        $erreur = '';
+
+        // si le form a été envoyé
+        if ($request->isMethod('POST')) {
+            // $_POST['email'] et $_POST['message']
+            $email = $request->request->get('email');
+            $message = $request->request->get('message');
+
+            if (!empty($email) && !empty($message)) {
+                $session = $request->getSession();
+                $session->set('email', $email);
+                $session->set('message', $message);
+
+                return $this->redirectToRoute('app_http_resultat');
+            } else {
+                $erreur = 'Tous les champs sont obligatoires';
+            }
+        }
+
+        return $this->render(
+            'http/formulaire.html.twig',
+            ['erreur' => $erreur]
+        );
+    }
+
+    /**
+     * @Route("/resultat")
+     */
+    public function resultat(SessionInterface $session)
+    {
+        //if (empty($session->all())) {
+        if ($session->isEmpty()) {
+            return $this->redirectToRoute('app_http_formulaire');
+        }
+
+        $email = $session->get('email');
+        $message = $session->get('message');
+
+        $session->clear();
+
+        return $this->render(
+            'http/resultat.html.twig',
+            [
+                'email' => $email,
+                'message' => $message
+            ]
+        );
     }
 }
