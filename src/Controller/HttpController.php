@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -119,8 +121,61 @@ class HttpController extends AbstractController
             // $this->render() retourne un objet instance de la classe Response
             // dont le contenu est le HTML construit par le template
             return $this->render('http/response.html.twig');
+        // http://127.0.0.1:8000/http/response?type=json
+        } elseif ($request->query->get('type') == 'json') {
+            $reponse = [
+                'nom' => 'Marx',
+                'prenom' => 'Groucho'
+            ];
+
+            //return new Response(json_encode($response));
+
+            // encode le tableau $reponse en json
+            // et retourne une réponse avec l'entête HTTP Content-Type application/json
+            return new JsonResponse($reponse);
+        // http://127.0.0.1:8000/http/response?found=no
+        } elseif ($request->query->get('found') == 'no') {
+            // pour retourner une 404, on jette cette exception
+            throw new NotFoundHttpException();
+        // http://127.0.0.1:8000/http/response?redirect=index
+        } elseif ($request->query->get('redirect') == 'index') {
+            // redirection en passant le nom de la route de la page:
+            // app_index_index : IndexController::index()
+            return $this->redirectToRoute('app_index_index');
+        } elseif ($request->query->get('redirect') == 'bonjour') {
+            // redirection vers une route qui contient une partie variable :
+            return $this->redirectToRoute(
+                'app_index_bonjour',
+                [
+                    'qui' => 'le monde'
+                ]
+            );
         }
 
         return $response;
+    }
+
+    /**
+     * @Route("/flash")
+     */
+    public function flash()
+    {
+        // enregistre un message dans la session
+        $this->addFlash('success', 'Message de confirmation');
+        $this->addFlash('success', 'Autre message de confirmation');
+        $this->addFlash('error', "Message d'erreur");
+
+        return $this->redirectToRoute('app_http_flashed');
+    }
+
+    /**
+     * @Route("/flashed")
+     */
+    public function flashed(SessionInterface $session)
+    {
+        dump($session->all());
+        dump($_SESSION);
+
+        return $this->render('http/flashed.html.twig');
     }
 }
