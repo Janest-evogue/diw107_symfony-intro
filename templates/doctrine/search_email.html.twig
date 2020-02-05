@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <form>
+        <input type="text" name="email" placeholder="Email">
+        <button type="submit">Chercher</button>
+    </form>
+
+    {% if user is defined %}
+        {% if user is not null %}
+            L'utilisateur est {{ user.pseudo }}
+        {% else %}
+            Aucun utilisateur avec cet email
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block title %}
+    {{ parent() }} - Doctrine search email
+{% endblock %}
+
